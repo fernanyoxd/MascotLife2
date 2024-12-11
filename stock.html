@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MascotLife-stock</title>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/128/2138/2138309.png">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('fondo.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .header {
+            background-color: #004080;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+
+        .header img {
+            height: 50px;
+        }
+
+        .stock, .login-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stock h2, .login-container h2 {
+            color: #004080;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .producto-lista {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .producto {
+            background-color: #ffffff;
+            border: 2px solid #004080;
+            border-radius: 8px;
+            width: 220px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .producto img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .producto h3 {
+            font-size: 16px;
+            color: #0073e6;
+            margin: 10px 0 5px;
+        }
+
+        .producto p {
+            font-size: 14px;
+            color: #333;
+            margin: 5px 0;
+        }
+
+        .boton-reabastecer {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .boton-reabastecer:hover {
+            background-color: #218838;
+        }
+
+        .volver-inicio {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 15px;
+            background-color: #0073e6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+        }
+
+        .volver-inicio:hover {
+            background-color: #005bb5;
+        }
+
+        .login-container input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .login-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #0073e6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .login-container button:hover {
+            background-color: #005bb5;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #004080;
+            color: white;
+        }
+
+        .footer-icons {
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .footer-icons img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .footer-icons img:hover {
+            transform: scale(1.2);
+        }
+    </style>
+    <script>
+        // Inicializar datos de stock en LocalStorage
+        const productos = [
+            { nombre: "Paracetamol", img: "paracetamol.avif", stock: 100 },
+            { nombre: "Ibuprofeno", img: "ibuprofeno.jpg", stock: 100 },
+            { nombre: "Sales de Rehidratación", img: "sales_Rehidratación.png", stock: 100 },
+            { nombre: "Jarabe para la Tos", img: "jarabe_tos.jpg", stock: 100 },
+            { nombre: "Omeprazol", img: "omeprazol.jpg", stock: 100 },
+            { nombre: "Antihistamínicos", img: "antihistaminico.webp", stock: 100 },
+            { nombre: "Agua Oxigenada", img: "agua_oxigenada.webp", stock: 100 },
+            { nombre: "Alcohol Medicinal", img: "alcohol_medicinal.jpg", stock: 100 },
+            { nombre: "Termómetro Digital", img: "termometro.jpg", stock: 100 },
+            { nombre: "Mascarillas Quirúrgicas", img: "mascarillas.webp", stock: 100 },
+            { nombre: "Pañal Huggies XG", img: "panal_huggies.webp", stock: 50 },
+            { nombre: "Pañitos Húmedos", img: "panitos_humedos.jpg", stock: 50 },
+            { nombre: "Desodorante", img: "desodorante.webp", stock: 50 }
+        ];
+
+        if (!localStorage.getItem("stock")) {
+            localStorage.setItem("stock", JSON.stringify(productos));
+        }
+
+        function verificarUsuario() {
+            const usuario = document.getElementById("usuario").value;
+            const contrasena = document.getElementById("contrasena").value;
+
+            if (usuario === "JAIRO" && contrasena === "1234") {
+                document.getElementById("login").style.display = "none";
+                document.getElementById("stock").style.display = "block";
+                renderizarProductos();
+            } else {
+                alert("Usuario o contraseña incorrectos.");
+            }
+        }
+
+        function renderizarProductos() {
+            const stock = JSON.parse(localStorage.getItem("stock"));
+            const contenedor = document.querySelector(".producto-lista");
+            contenedor.innerHTML = "";
+
+            stock.forEach((producto, index) => {
+                const div = document.createElement("div");
+                div.className = "producto";
+                div.innerHTML = `
+                    <img src="${producto.img}" alt="${producto.nombre}">
+                    <h3>${producto.nombre}</h3>
+                    <p>Stock Disponible: ${producto.stock}</p>
+                    <button class="boton-reabastecer" onclick="reabastecerProducto(${index})">Reabastecer</button>
+                `;
+                contenedor.appendChild(div);
+            });
+        }
+
+        function reabastecerProducto(index) {
+            const stock = JSON.parse(localStorage.getItem("stock"));
+            const cantidad = parseInt(prompt(`¿Cuántas unidades desea agregar a ${stock[index].nombre}?`));
+
+            if (cantidad && cantidad > 0) {
+                stock[index].stock += cantidad;
+                localStorage.setItem("stock", JSON.stringify(stock));
+                renderizarProductos();
+                alert(`${cantidad} unidades de ${stock[index].nombre} se han añadido al stock.`);
+            } else {
+                alert("Ingrese una cantidad válida.");
+            }
+        }
+
+        window.onload = function () {
+            document.getElementById("stock").style.display = "none";
+        };
+    </script>
+</head>
+<body>
+    <header class="header">
+        <img src="tu_logo.PNG" alt="Logo Farmacia">
+    </header>
+
+    <div id="login" class="login-container">
+        <h2>Iniciar Sesión</h2>
+        <input type="text" id="usuario" placeholder="Usuario">
+        <input type="password" id="contrasena" placeholder="Contraseña">
+        <button onclick="verificarUsuario()">Ingresar</button>
+    </div>
+
+    <section id="stock" class="stock">
+        <h2>Stock de Productos</h2>
+        <div class="producto-lista"></div>
+        <a href="index.html" class="volver-inicio">Volver a Inicio</a>
+    </section>
+
+    <footer>
+        <div class="footer-icons">
+            <a href="#"><img src="facebook_logo.jpg" alt="Facebook"></a>
+            <a href="#"><img src="whatsapp_logo.png" alt="WhatsApp"></a>
+            <a href="#"><img src="instagram_logo.jpg" alt="Instagram"></a>
+        </div>
+        <p>&copy; 2024 Farmacia El Buen Precio</p>
+    </footer>
+</body>
+</html>
+
+
+
+
+

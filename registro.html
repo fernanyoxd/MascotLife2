@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MascotLife-Productos</title>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/128/2138/2138309.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+        background-image: url('https://png.pngtree.com/thumb_back/fw800/background/20231226/pngtree-collection-of-hand-drawn-image_13921696.png'); /* Fondo adaptado para MascotLife */
+        background-size: cover;
+        background-attachment: fixed;
+        min-height: 100vh;
+    }
+
+    .header {
+        text-align: center;
+        background-color: #00796B; /* Verde MascotLife */
+        color: white;
+        padding: 20px 0;
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+
+    .registro-form {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #e0f7ff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    table th, table td {
+        padding: 10px;
+        text-align: left;
+        border: 1px solid #ccc;
+    }
+
+    table th {
+        background-color: #00796B; /* Verde MascotLife */
+        color: white;
+    }
+
+    form label {
+        display: block;
+        margin-top: 10px;
+        color: #000;
+        font-size: 14px;
+    }
+
+    form input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    .botones {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .botones button, .botones a {
+        background-color: #00796B; /* Verde MascotLife */
+        color: #fff;
+        padding: 8px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 0 5px;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+    }
+
+    .botones button:hover, .botones a:hover {
+        background-color: #004D40; /* Verde más oscuro al pasar el mouse */
+    }
+</style>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+        const tabla = document.getElementById("productosSeleccionados").querySelector("tbody");
+        const totalElement = document.getElementById("total");
+
+        if (carrito.length === 0) {
+            tabla.innerHTML = `<tr><td colspan="5" style="text-align: center;">No hay productos seleccionados.</td></tr>`;
+            totalElement.textContent = "S/ 0.00";
+            return;
+        }
+
+        let total = 0;
+
+        carrito.forEach((producto, index) => {
+            const subtotal = producto.cantidad * producto.precio;
+            total += subtotal;
+
+            const fila = document.createElement("tr");
+            fila.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${producto.nombre}</td>
+                <td>${producto.cantidad}</td>
+                <td>S/ ${producto.precio.toFixed(2)}</td>
+                <td>S/ ${subtotal.toFixed(2)}</td>
+            `;
+            tabla.appendChild(fila);
+        });
+
+        totalElement.textContent = `S/ ${total.toFixed(2)}`;
+    });
+
+    function guardarRegistro() {
+        const nombre = document.getElementById("nombre").value.trim();
+        const dni = document.getElementById("dni").value.trim();
+        const direccion = document.getElementById("direccion").value.trim();
+        const correo = document.getElementById("correo").value.trim();
+        const nombreMascota = document.getElementById("nombreMascota").value.trim();
+        const especieMascota = document.getElementById("especieMascota").value.trim();
+        const razaMascota = document.getElementById("razaMascota").value.trim();
+
+        if (!nombre || !dni || !direccion || !correo || !nombreMascota || !especieMascota || !razaMascota) {
+            alert("Por favor, completa todos los campos.");
+            return;
+        }
+
+        const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+
+        if (carrito.length === 0) {
+            alert("El carrito está vacío. Agrega productos antes de registrar.");
+            return;
+        }
+
+        const cliente = {
+            nombre,
+            dni,
+            direccion,
+            correo,
+            mascota: {
+                nombre: nombreMascota,
+                especie: especieMascota,
+                raza: razaMascota
+            },
+            productos: carrito
+        };
+
+        // Guardar el cliente en localStorage
+        const clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+        clientes.push(cliente);
+        localStorage.setItem("clientes", JSON.stringify(clientes));
+
+        alert("Registro guardado exitosamente.");
+        localStorage.removeItem("carrito"); // Limpiar carrito
+        window.location.href = "clientes.html"; // Redirigir a la página de clientes
+    }
+
+    async function generarPDF() {
+        const logoUrl = 'https://cdn-icons-png.flaticon.com/128/2138/2138309.png'; // Reemplaza con la ruta o URL de tu logo
+        const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+        const nombre = document.getElementById("nombre").value || "Sin nombre";
+        const dni = document.getElementById("dni").value || "Sin DNI";
+        const direccion = document.getElementById("direccion").value || "Sin dirección";
+        const correo = document.getElementById("correo").value || "Sin correo";
+        const nombreMascota = document.getElementById("nombreMascota").value || "Sin nombre de mascota";
+        const especieMascota = document.getElementById("especieMascota").value || "Sin especie";
+        const razaMascota = document.getElementById("razaMascota").value || "Sin raza";
+        let total = 0;
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Cargar el logo como imagen
+        const logoImage = await fetch(logoUrl).then(res => res.blob()).then(blob => {
+            return new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+        });
+
+        // Agregar el logo al PDF
+        doc.addImage(logoImage, 'PNG', 50, 50, 50, 20);
+
+        // Título
+        doc.setFontSize(16);
+        doc.text("Boleta de Compra", 105, 30, null, null, "center");
+
+        // Datos del cliente
+        doc.setFontSize(12);
+        doc.text(`Nombre: ${nombre}`, 20, 50);
+        doc.text(`DNI: ${dni}`, 20, 60);
+        doc.text(`Dirección: ${direccion}`, 20, 70);
+        doc.text(`Correo: ${correo}`, 20, 80);
+
+        // Datos de la mascota
+        doc.text("Información de la Mascota:", 20, 90);
+        doc.text(`Nombre de la mascota: ${nombreMascota}`, 20, 100);
+        doc.text(`Especie: ${especieMascota}`, 20, 110);
+        doc.text(`Raza: ${razaMascota}`, 20, 120);
+
+        // Tabla de productos
+        doc.text("Productos:", 20, 130);
+        let y = 140;
+        carrito.forEach((producto, index) => {
+            const subtotal = producto.cantidad * producto.precio;
+            total += subtotal;
+            doc.text(
+                `${index + 1}. ${producto.nombre} - Cantidad: ${producto.cantidad} - Precio: S/ ${producto.precio.toFixed(2)} - Subtotal: S/ ${subtotal.toFixed(2)}`,
+                20,
+                y
+            );
+            y += 10;
+        });
+
+        // Total
+        doc.text(`Total: S/ ${total.toFixed(2)}`, 20, y + 10);
+
+        // Mensajes finales
+        doc.setFontSize(14);
+        doc.text("¡Gracias por su compra!", 105, y + 30, null, null, "center");
+        doc.text("Dios lo bendiga", 105, y + 40, null, null, "center");
+        doc.text("Vuelva pronto", 105, y + 50, null, null, "center");
+
+        // Descargar PDF
+        doc.save("boleta_compra.pdf");
+    }
+</script>
+
+</head>
+<body>
+    <header class="header">
+        <h1>Registro de Productos</h1>
+    </header>
+
+    <section class="registro-form">
+        <h2>Productos Seleccionados</h2>
+        <table id="productosSeleccionados">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" style="text-align: right; font-weight: bold;">Total:</td>
+                    <td id="total" style="font-weight: bold;">S/ 0.00</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <h2>Información del Cliente</h2>
+        <form>
+            <label for="nombre">Nombre Completo:</label>
+            <input type="text" id="nombre" name="nombre" placeholder="Escribe tu nombre completo" required>
+
+            <label for="dni">DNI:</label>
+            <input type="text" id="dni" name="dni" placeholder="Escribe tu DNI" required>
+
+            <label for="direccion">Dirección:</label>
+            <input type="text" id="direccion" name="direccion" placeholder="Escribe tu dirección" required>
+
+            <label for="correo">Correo Electrónico:</label>
+            <input type="email" id="correo" name="correo" placeholder="Escribe tu correo electrónico" required>
+
+            <h3>Información de la Mascota</h3>
+            <label for="nombreMascota">Nombre de la Mascota:</label>
+            <input type="text" id="nombreMascota" name="nombreMascota" placeholder="Escribe el nombre de la mascota" required>
+
+            <label for="especieMascota">Especie:</label>
+            <input type="text" id="especieMascota" name="especieMascota" placeholder="Escribe la especie de la mascota" required>
+
+            <label for="razaMascota">Raza:</label>
+            <input type="text" id="razaMascota" name="razaMascota" placeholder="Escribe la raza de la mascota" required>
+        </form>
+
+        <div class="botones">
+            <button onclick="guardarRegistro()">Guardar y Ver Clientes</button>
+            <button onclick="generarPDF()">Imprimir en PDF</button>
+            <a href="index.html" class="boton">Volver al Inicio</a>
+        </div>
+    </section>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

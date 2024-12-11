@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes</title>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/128/2138/2138309.png">
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #e5f2e7; /* Fondo suave verde claro */
+        color: #333;
+        margin: 0;
+        padding: 20px;
+        background-image: url('https://png.pngtree.com/thumb_back/fw800/background/20231226/pngtree-collection-of-hand-drawn-image_13921696.png');
+        background-size: cover;
+        background-attachment: fixed;
+        min-height: 100vh;
+    }
+
+    .header {
+        text-align: center;
+        background-color: #2c6b3f; /* Verde oscuro */
+        color: white;
+        padding: 20px 0;
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+
+    .contenedor {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 14px;
+    }
+
+    table th, table td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: left;
+    }
+
+    table th {
+        background-color: #2c6b3f; /* Verde oscuro */
+        color: white;
+        font-size: 14px;
+    }
+
+    .botones {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .botones .boton {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #2c6b3f; /* Verde oscuro */
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .botones .boton:hover {
+        background-color: #1f4c2d; /* Verde aún más oscuro para hover */
+    }
+
+    .botones .boton:active {
+        background-color: #1b4224; /* Verde muy oscuro cuando se hace clic */
+    }
+</style>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const contenedor = document.querySelector(".contenedor");
+
+        function cargarClientes() {
+            const clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+
+            if (clientes.length === 0) {
+                contenedor.innerHTML = "<p>No hay datos registrados.</p>";
+                return;
+            }
+
+            let contenidoHTML = `
+                <h2>Clientes Registrados</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre</th>
+                            <th>DNI</th>
+                            <th>Dirección</th>
+                            <th>Correo</th>
+                            <th>Productos</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            clientes.forEach((cliente, index) => {
+                let productosHTML = `<ul>`;
+                let total = 0;
+
+                cliente.productos.forEach(producto => {
+                    const subtotal = producto.cantidad * producto.precio;
+                    total += subtotal;
+                    productosHTML += `<li>${producto.nombre} (x${producto.cantidad}) - S/ ${subtotal.toFixed(2)}</li>`;
+                });
+
+                productosHTML += `</ul>`;
+
+                contenidoHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${cliente.nombre}</td>
+                        <td>${cliente.dni}</td>
+                        <td>${cliente.direccion}</td>
+                        <td>${cliente.correo}</td>
+                        <td>${productosHTML}</td>
+                        <td>S/ ${total.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            contenidoHTML += `
+                    </tbody>
+                </table>
+                <div class="botones">
+                    <a href="index.html" class="boton">Volver a la Página Principal</a>
+                    <button class="boton" onclick="limpiarDatos()">Limpiar Datos</button>
+                </div>
+            `;
+
+            contenedor.innerHTML = contenidoHTML;
+        }
+
+        // Limpiar registros de clientes
+        window.limpiarDatos = function () {
+            if (confirm("¿Estás seguro de que deseas eliminar todos los datos guardados?")) {
+                localStorage.removeItem("clientes");
+                alert("Todos los datos han sido eliminados.");
+                location.reload();
+            }
+        };
+
+        cargarClientes();
+    });
+</script>
+
+</head>
+<body>
+    <header class="header">
+        <h1>Clientes Registrados</h1>
+    </header>
+
+    <!-- Contenedor para los datos de clientes -->
+    <div class="contenedor"></div>
+</body>
+</html>
+
+
+
+
+
